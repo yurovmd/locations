@@ -1,0 +1,29 @@
+name: iOS Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Xcode
+      run: sudo xcode-select -switch /Applications/Xcode_15.0.1.app
+
+    - name: Build and run tests
+      run: |
+        xcodebuild clean test \
+          -project Locations.xcodeproj \
+          -scheme Locations \
+          -sdk iphonesimulator \
+          -destination 'platform=iOS Simulator,name=iPhone 13,OS=16.0' \
+          ONLY_ACTIVE_ARCH=NO
