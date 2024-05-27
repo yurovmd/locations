@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Location: Codable, Equatable {
+public struct Location: Codable, Equatable, Hashable {
     public let name: String?
     public let lat: Double
     public let long: Double

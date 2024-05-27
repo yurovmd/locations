@@ -10,7 +10,12 @@ import Combine
 import LocationsCoreModels
 
 public protocol LocationsRepository {
-    func fetchLocations() -> AnyPublisher<[Location], Error>
+    func fetchLocations(policy: LocationsRepositoryFetchPolicy) -> AnyPublisher<[Location], Error>
+}
+
+public enum LocationsRepositoryFetchPolicy {
+    case cachedDataFirst
+    case ignoreCachedData
 }
 
 final class LocationsRepositoryImpl: LocationsRepository {
@@ -31,7 +36,7 @@ final class LocationsRepositoryImpl: LocationsRepository {
     
     // MARK: - LocationsRepository
     
-    func fetchLocations() -> AnyPublisher<[Location], Error> {
+    func fetchLocations(policy: LocationsRepositoryFetchPolicy) -> AnyPublisher<[Location], Error> {
         let networkPublisher = locationsService
             .fetchLocations()
             .handleEvents(receiveOutput: { [weak locationsStorage] locations in
@@ -40,19 +45,25 @@ final class LocationsRepositoryImpl: LocationsRepository {
             .eraseToAnyPublisher()
         
         let storedLocations = locationsStorage.fetchLocations()
-        if !storedLocations.isEmpty {
-            let storagePublisher = Just(storedLocations)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
-            
-            return storagePublisher
-                .append(networkPublisher)
-                .catch { _ -> AnyPublisher<[Location], Error> in
-                    // In case we have a network error, we should only send a cached value
-                    return Empty<[Location], Error>().eraseToAnyPublisher()
-                }
-                .eraseToAnyPublisher()
-        } else {
+        
+        switch policy {
+        case .cachedDataFirst:
+            if !storedLocations.isEmpty {
+                let storagePublisher = Just(storedLocations)
+                    .setFailureType(to: Error.self)
+                    .eraseToAnyPublisher()
+                
+                return storagePublisher
+                    .append(networkPublisher)
+                    .catch { _ -> AnyPublisher<[Location], Error> in
+                        // In case we have a network error, we should only send a cached value
+                        return Empty<[Location], Error>().eraseToAnyPublisher()
+                    }
+                    .eraseToAnyPublisher()
+            } else {
+                return networkPublisher
+            }
+        case .ignoreCachedData:
             return networkPublisher
         }
     }

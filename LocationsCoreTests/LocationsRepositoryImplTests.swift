@@ -56,7 +56,7 @@ final class LocationsRepositoryImplTests: XCTestCase {
         let expectation = expectation(description: "fetchLocations completes")
         var receivedLocations: [[Location]] = []
         var receivedError: Error?
-        locationsRepository.fetchLocations()
+        locationsRepository.fetchLocations(policy: .cachedDataFirst)
             .sink(receiveCompletion: { completion in
                 if case let .failure(error) = completion {
                     receivedError = error
@@ -82,7 +82,7 @@ final class LocationsRepositoryImplTests: XCTestCase {
         let expectation = expectation(description: "fetchLocations completes")
         var receivedLocations: [Location]?
         var receivedError: Error?
-        locationsRepository.fetchLocations()
+        locationsRepository.fetchLocations(policy: .cachedDataFirst)
             .sink(receiveCompletion: { completion in
                 if case let .failure(error) = completion {
                     receivedError = error
@@ -109,7 +109,7 @@ final class LocationsRepositoryImplTests: XCTestCase {
         let expectation = expectation(description: "fetchLocations completes")
         var receivedLocations: [Location]?
         var receivedError: Error?
-        locationsRepository.fetchLocations()
+        locationsRepository.fetchLocations(policy: .ignoreCachedData)
             .sink(receiveCompletion: { completion in
                 if case let .failure(error) = completion {
                     receivedError = error
@@ -120,7 +120,7 @@ final class LocationsRepositoryImplTests: XCTestCase {
             })
             .store(in: &cancellables)
         waitForExpectations(timeout: 1, handler: nil)
-        XCTAssertNotNil(receivedLocations)
-        XCTAssertNil(receivedError)
+        XCTAssertNil(receivedLocations)
+        XCTAssertNotNil(receivedError)
     }
 }
