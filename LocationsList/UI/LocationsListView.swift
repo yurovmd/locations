@@ -20,6 +20,7 @@ final class LocationsListView: UIView {
     let emptyResultsView = EmptyResultsView()
     let refreshControl = UIRefreshControl()
     let errorResultsView = ErrorResultsView()
+    let customRouteButton = UIButton()
     
     // MARK: - Initializers
     
@@ -44,6 +45,7 @@ final class LocationsListView: UIView {
         emptyResultsView.isHidden = true
         setupTableView()
         setupSpinner()
+        setupCustomRouteButton()
         setupLayout()
     }
     
@@ -63,6 +65,22 @@ final class LocationsListView: UIView {
         NSLayoutConstraint.activate([
             spinnerView.centerXAnchor.constraint(equalTo: centerXAnchor),
             spinnerView.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
+    }
+    
+    private func setupCustomRouteButton() {
+        customRouteButton.translatesAutoresizingMaskIntoConstraints = false
+        customRouteButton.setTitle("Custom Location", for: .normal)
+        customRouteButton.backgroundColor = .blue
+        customRouteButton.setTitleColor(.white, for: .normal)
+        customRouteButton.layer.masksToBounds = true
+        customRouteButton.layer.cornerRadius = 16.0
+        addSubview(customRouteButton)
+        NSLayoutConstraint.activate([
+            customRouteButton.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            customRouteButton.heightAnchor.constraint(equalToConstant: 32.0),
+            customRouteButton.widthAnchor.constraint(equalToConstant: 200.0),
+            customRouteButton.centerXAnchor.constraint(equalTo: centerXAnchor),
         ])
     }
     

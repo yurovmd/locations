@@ -6,6 +6,7 @@
 //
 
 import Combine
+import CustomLocation
 import LocationsCoreModels
 import UIKit
 
@@ -49,8 +50,11 @@ public final class LocationsListViewController: UIViewController {
         setupNavigationBar()
         setupRefreshControl()
         setupErrorResultsView()
+        setupCustomRouteButton()
         bindViewModel()
         viewModel.initialFetch()
+        guard let locationsListView else { return }
+        locationsListView.tableView.delegate = self
     }
     
     // MARK: - UI Setup
@@ -75,6 +79,15 @@ public final class LocationsListViewController: UIViewController {
         }
     }
     
+    private func setupCustomRouteButton() {
+        guard let locationsListView else { return }
+        locationsListView.customRouteButton.addTarget(
+            self,
+            action: #selector(customRouteButtonTapped),
+            for: .touchUpInside
+        )
+    }
+    
     private func bindViewModel() {
         viewModel
             .statePublisher
@@ -83,6 +96,13 @@ public final class LocationsListViewController: UIViewController {
                 self?.updateUI(with: state)
             }
             .store(in: &cancellables)
+    }
+    
+    // MARK: - Actions
+    
+    @objc
+    private func customRouteButtonTapped() {
+        viewModel.customLocationTapped()
     }
     
     // MARK: - UI Updates
@@ -138,5 +158,15 @@ public final class LocationsListViewController: UIViewController {
     @objc
     private func refreshData() {
         viewModel.reload()
+    }
+}
+
+// MARK: -
+
+extension LocationsListViewController: UITableViewDelegate {
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
+        tableView.deselectRow(at: indexPath, animated: true)
+        viewModel.selected(location: item)
     }
 }

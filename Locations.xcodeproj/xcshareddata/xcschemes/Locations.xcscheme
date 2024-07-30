@@ -77,6 +77,17 @@
                ReferencedContainer = "container:Locations.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "979C79EE2C594A6E004A1AAE"
+               BuildableName = "CustomLocationTests.xctest"
+               BlueprintName = "CustomLocationTests"
+               ReferencedContainer = "container:Locations.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

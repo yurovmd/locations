@@ -43,7 +43,6 @@ final class LocationCell: UITableViewCell {
     ) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
-        isUserInteractionEnabled = false
     }
     
     required init?(coder: NSCoder) {

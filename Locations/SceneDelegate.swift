@@ -28,8 +28,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     private func createListViewController() -> UIViewController {
         let repository = LocationsRepositoryFactory.create()
-        let viewModel = LocationsListViewModelImpl(repository: repository)
+        let router = LocationsListRouterImpl()
+        let viewModel = LocationsListViewModelImpl(
+            repository: repository,
+            router: router,
+            externalRouter: LocationsExternalRouterImpl(application: UIApplication.shared)
+        )
         let vc = LocationsListViewController(viewModel: viewModel)
+        router.presentingController = vc
         return vc
     }
 }

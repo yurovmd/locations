@@ -16,6 +16,8 @@ final class LocationsListViewModelImplTests: XCTestCase {
     
     private var viewModel: LocationsListViewModelImpl!
     private var repository: MockLocationsRepository!
+    private var router: MockLocationsListRouter!
+    private var externalRouter: MockLocationsExternalRouter!
     private var cancellables: Set<AnyCancellable>!
     
     // MARK: - Lifecycle
@@ -23,13 +25,21 @@ final class LocationsListViewModelImplTests: XCTestCase {
     override func setUp() {
         super.setUp()
         repository = MockLocationsRepository()
-        viewModel = LocationsListViewModelImpl(repository: repository)
+        router = MockLocationsListRouter()
+        externalRouter = MockLocationsExternalRouter()
+        viewModel = LocationsListViewModelImpl(
+            repository: repository,
+            router: router,
+            externalRouter: externalRouter
+        )
         cancellables = []
     }
     
     override func tearDown() {
         viewModel = nil
         repository = nil
+        router = nil
+        externalRouter = nil
         cancellables = nil
         super.tearDown()
     }
@@ -127,6 +137,29 @@ final class LocationsListViewModelImplTests: XCTestCase {
         viewModel.reload()
         wait(for: [expectation], timeout: 1.0)
     }
+    
+    func testSelectedLocation() {
+        let expectation = expectation(description: #function)
+        let location = Location(name: nil, lat: 10, long: 10)
+        externalRouter.onRouteCalled = { routedLocation in
+            if location == routedLocation {
+                expectation.fulfill()
+            }
+        }
+        viewModel.selected(location: location)
+        wait(for: [expectation])
+    }
+    
+    func testCustomLocationTapped() {
+        let vc = MockUIViewControllerProtocol()
+        let expectation = expectation(description: #function)
+        vc.onPresentCalled = { _ in
+            expectation.fulfill()
+        }
+        router.presentingController = vc
+        viewModel.customLocationTapped()
+        wait(for: [expectation])
+    }
 }
 
 final class MockLocationsRepository: LocationsRepository {
@@ -137,5 +170,35 @@ final class MockLocationsRepository: LocationsRepository {
             return Fail(error: NSError(domain: "", code: -1, userInfo: nil)).eraseToAnyPublisher()
         }
         return result.publisher.eraseToAnyPublisher()
+    }
+}
+
+final class MockLocationsListRouter: LocationsListRouter {
+    var presentingController: UIViewControllerProtocol?
+    
+    func route(to destination: Destination) {
+        presentingController?.present(UIViewController(), animated: false, completion: nil)
+    }
+}
+
+final class MockLocationsExternalRouter: LocationsExternalRouter {
+    // MARK: - Properties
+    
+    var onRouteCalled: ((Location) -> Void)?
+    
+    func route(to location: Location) {
+        onRouteCalled?(location)
+    }
+}
+
+final class MockUIViewControllerProtocol: UIViewControllerProtocol {
+    // MARK: - Properties
+    
+    var onPresentCalled: ((UIViewController) -> Void)?
+    
+    // MARK: - UIViewControllerProtocol
+    
+    func present(_ viewControllerToPresent: UIViewController, animated: Bool, completion: (() -> Void)?) {
+        onPresentCalled?(viewControllerToPresent)
     }
 }
